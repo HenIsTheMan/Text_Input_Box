@@ -33,11 +33,12 @@ xx = 10;
 yy = 10;
 canEdit = 0;
 state = 0;
-level = 0;
-xStart = 0;
-xEnd = 0;
-startOrigin[0] = 1;
-endOrigin[0] = 1;
+textStore = "";
+caretLine = 0;
+endptLine = 0;
+for(i = 0; i &lt; 10; i++){
+    breakPos[i] = 999;
+}
 </string>
           </argument>
         </arguments>
@@ -107,11 +108,16 @@ alarm[1] = 20;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(keyboard_check(vk_anykey)){
+            <string>for(i = 0; i &lt; array_length_1d(breakPos); i++){
+    if(string_copy(keyboardString,breakPos[i],1) != "#"){
+        breakPos[i] = 999;
+    }
+}
+if(keyboard_check(vk_anykey)){
     state = 1;
     keyboard_string = string_copy(keyboard_string,1,20 + string_count("\#",keyboard_string));
 } else{
-    alarm[0] = 15; //??
+    alarm[0] = 15;
 }
 
 if(keyboard_check_pressed(vk_home)){
@@ -150,15 +156,19 @@ if(keyboard_check(vk_control) &amp;&amp; keyboard_check_pressed(ord("A"))){
     caret = 0;
     endpt = string_length(keyboardString);
 }
-if(canEdit &amp;&amp; keyboard_check(vk_control) &amp;&amp; keyboard_check_pressed(ord("X"))){
-    clipboard_set_text(string_copy(keyboardString,min(caret,endpt) + 1,abs(endpt - caret)));
-    keyboardString = string_delete(keyboardString,min(caret,endpt) + 1,abs(endpt - caret));
-    keyboard_string = keyboardString;
-    caret = min(caret,endpt);
-    endpt = caret;
-}
-if(canEdit &amp;&amp; keyboard_check(vk_control) &amp;&amp; keyboard_check_pressed(ord("C"))){
-    clipboard_set_text(string_copy(keyboardString,min(caret,endpt) + 1,abs(endpt - caret)));
+if(canEdit &amp;&amp; caret != endpt &amp;&amp; keyboard_check(vk_control)){
+    if(keyboard_check_pressed(ord("X"))){
+        clipboard_set_text(string_copy(keyboardString,min(caret,endpt) + 1,abs(endpt - caret)));
+        textStore = clipboard_get_text();
+        keyboardString = string_delete(keyboardString,min(caret,endpt) + 1,abs(endpt - caret));
+        keyboard_string = keyboardString;
+        caret = min(caret,endpt);
+        endpt = caret;
+    }
+    if(keyboard_check_pressed(ord("C"))){
+        clipboard_set_text(string_copy(keyboardString,min(caret,endpt) + 1,abs(endpt - caret)));
+        textStore = clipboard_get_text();
+    }
 }
 if(canEdit &amp;&amp; keyboard_check(vk_control) &amp;&amp; keyboard_check_pressed(ord("V"))){
     for(i = 0; i &lt; string_length(clipboard_get_text()); i++){
@@ -173,7 +183,7 @@ if(canEdit &amp;&amp; keyboard_check(vk_control) &amp;&amp; keyboard_check_press
             caret = min(caret,endpt);
         }
         temp = keyboardString;
-        if(string_copy(clipboard_get_text(),i + 2,1) == "#"){
+        if(string_copy(clipboard_get_text(),i + 2,1) == "#" &amp;&amp; clipboard_get_text() != textStore){
             keyboardString = string_insert("\#",keyboardString,caret + 1);
             i++;
         } else{
@@ -222,9 +232,7 @@ if(keyboard_check_pressed(vk_delete) || (keyboard_check(vk_delete) &amp;&amp; al
     }
     endpt = caret;
 }
-xStart = caret; //??
-xEnd = endpt; //??
-if(keyboard_check_pressed(vk_enter)){
+if(keyboard_check_pressed(vk_enter) &amp;&amp; string_length(keyboard_string) &lt; 20 + string_count("\#",keyboard_string)){
     if(caret != endpt){
         keyboard_string = string_delete(keyboard_string,min(caret,endpt) + 1,abs(endpt - caret));
         caret = min(caret,endpt);
@@ -232,12 +240,18 @@ if(keyboard_check_pressed(vk_enter)){
     keyboard_string = string_insert("#",keyboard_string,caret + 1);
     caret++;
     endpt = caret;
-    level++;
-    startOrigin[level] = caret;
-    endOrigin[level] = caret;
-    xStart = caret;
-    xEnd = caret;
+    breakPos[string_count("#",keyboard_string) - string_count("\#",keyboard_string) - 1] = caret;
 }
+index = 0;
+while(caret &gt;= breakPos[index]){
+    index++;
+}
+caretLine = index;
+index = 0;
+while(endpt &gt;= breakPos[index]){
+    index++;
+}
+endptLine = index;
 if(canEdit &amp;&amp; keyboard_check(vk_anykey)){
     keyboardString = keyboard_string;
 } else{
@@ -276,13 +290,36 @@ if(keyboard_check_pressed(vk_escape) &amp;&amp; keyboardString != ""){
             <string>draw_self();
 draw_set_font(f_fancy);
 draw_text(xx, yy, keyboardString);
-draw_text(xx, yy + 100, keyboard_string);
-if(canEdit &amp;&amp; (caret != endpt || (caret == endpt &amp;&amp; state &amp; 1))){
-    draw_set_alpha(1 - 0.7 * (caret != endpt));
-    draw_rectangle(xx + string_width(string_copy(keyboardString,startOrigin[level],xStart)), yy + string_height("\\") * level, xx + string_width(string_copy(keyboardString,endOrigin[level],xEnd)), yy + string_height("\\") * (level + 1), 0);
-    draw_set_alpha(1);
+if(canEdit){
+    if(string_count("#",keyboard_string) - string_count("\#",keyboard_string) == 0 &amp;&amp; (caret != endpt || (caret == endpt &amp;&amp; state &amp; 1))){
+        draw_set_alpha(1 - 0.7 * (caret != endpt));
+        draw_rectangle(xx + string_width(string_copy(keyboardString,1,caret)), yy, xx + string_width(string_copy(keyboardString,1,endpt)), yy + string_height("\"), 0);
+        draw_set_alpha(1);
+    } else{
+        draw_set_alpha(0.3);
+        if(caretLine == endptLine){
+            if(min(caretLine,endptLine) == 0){
+                draw_rectangle(xx + string_width(string_copy(keyboardString,1,min(caret,endpt))), yy, xx + string_width(string_copy(keyboardString,1,max(caret,endpt))), yy + string_height("\"), 0);
+            } else{
+                draw_rectangle(xx + string_width(string_copy(keyboardString,breakPos[caretLine - 1] + 1,caret - breakPos[caretLine - 1])), yy + string_height("\") * caretLine, xx + string_width(string_copy(keyboardString,breakPos[caretLine - 1] + 1,endpt - breakPos[caretLine - 1])), yy + string_height("\") * (endptLine + 1), 0);
+            }
+        } else{
+            if(min(caretLine,endptLine) == 0){
+                draw_rectangle(xx + string_width(string_copy(keyboardString,1,min(caret,endpt))), yy, xx + string_width(string_copy(keyboardString,1,breakPos[min(caretLine,endptLine)])), yy + string_height("\"), 0);
+            } else{
+                draw_rectangle(xx + string_width(string_copy(keyboardString,breakPos[min(caretLine,endptLine) - 1] + 1,caret - breakPos[min(caretLine,endptLine) - 1])), yy + string_height("\") * min(caretLine,endptLine), xx + string_width(string_copy(keyboardString,breakPos[min(caretLine,endptLine) - 1] + 1,breakPos[min(caretLine,endptLine)] - breakPos[min(caretLine,endptLine) - 1])), yy + string_height("\") * (min(caretLine,endptLine) + 1), 0);
+            }
+            draw_rectangle(xx, yy + string_height("\") * max(caretLine,endptLine), xx + string_width(string_copy(keyboardString,breakPos[max(caretLine,endptLine) - 1] + 1,endpt - breakPos[max(caretLine,endptLine) - 1])), yy + string_height("\") * (max(caretLine,endptLine) + 1), 0);
+            for(i = 0; i &lt; string_count("#",keyboard_string) - string_count("\#",keyboard_string) - 1; i++){ //??
+                draw_rectangle(xx, yy + string_height("\") * (i + 1), xx + string_width(string_copy(keyboardString,breakPos[caretLine + i] + 1,breakPos[caretLine + i + 1] - breakPos[caretLine + i])), yy + string_height("\") * (i + 2), 0);
+            }
+        }
+        draw_set_alpha(1);
+    }
 }
 draw_text(100,200,string_length(keyboardString));
+draw_text(150,200,caretLine);
+draw_text(200,200,endptLine);
 </string>
           </argument>
         </arguments>
