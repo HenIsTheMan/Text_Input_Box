@@ -1,18 +1,15 @@
-check = 0;
-for(i = 0; i < string_length(keyboardString) + 1; i++){
-    if(check < mouse_x - xx){
-        if(mouse_x - xx > string_width(keyboardString)){
-            return string_length(keyboardString);
-            break;
-        } else{
-            check += string_width(string_copy(keyboardString,i + 1,1));
-        }
+check = xx;
+amt = 0;
+index = 0;
+while(check < mouse_x){
+    if(string_copy(keyboardString,index + 1,2) == "\#"){
+        check += string_width("\#");
+        amt = 2;
     } else{
-        if((mouse_x - xx) - string_width(string_copy(keyboardString,1,i - 1)) < check - (mouse_x - xx)){
-            return i - 1;
-        } else{
-            return i;
-        }
-        break;
+        check += string_width(string_copy(keyboardString,index + 1,1));
+        amt = 1;
     }
+    index += amt;
 }
+index = min(index,string_length(keyboardString));
+return index - amt * (mouse_x - (xx + string_width(string_copy(keyboardString,1,index - amt))) < check - mouse_x);
