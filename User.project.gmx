@@ -10,12 +10,13 @@
   </sprites>
   <backgrounds name="background"/>
   <paths name="paths"/>
+  <scripts name="scripts">
+    <script>scripts\scr_mouse.gml</script>
+  </scripts>
   <fonts name="fonts">
     <font>fonts\f_fancy</font>
   </fonts>
   <objects name="objects">
-    <object>objects\obj_log</object>
-    <object>objects\obj_input</object>
     <object>objects\obj_textInputBox</object>
   </objects>
   <rooms name="rooms">
