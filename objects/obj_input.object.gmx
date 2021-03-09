@@ -8,34 +8,6 @@
   <parentName>&lt;undefined&gt;</parentName>
   <maskName>&lt;undefined&gt;</maskName>
   <events>
-    <event eventtype="0" enumb="0">
-      <action>
-        <libid>1</libid>
-        <id>603</id>
-        <kind>7</kind>
-        <userelative>0</userelative>
-        <isquestion>0</isquestion>
-        <useapplyto>-1</useapplyto>
-        <exetype>2</exetype>
-        <functionname></functionname>
-        <codestring></codestring>
-        <whoName>self</whoName>
-        <relative>0</relative>
-        <isnot>0</isnot>
-        <arguments>
-          <argument>
-            <kind>1</kind>
-            <string>caret_move = 0
-caret_move_rate = 2;
-text = "";
-caret = 0;
-fillchar = "`" // used as filler character in input handling.
-filltext = string_repeat(fillchar, 10)
-</string>
-          </argument>
-        </arguments>
-      </action>
-    </event>
     <event eventtype="3" enumb="0">
       <action>
         <libid>1</libid>
@@ -53,39 +25,9 @@ filltext = string_repeat(fillchar, 10)
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(keyboard_check(vk_left) ^ keyboard_check(vk_right)) {
-    if(keyboard_check(vk_left) &amp;&amp; caret &gt; 0){
-        caret--;
-    }
-    if(keyboard_check(vk_right) &amp;&amp; caret &lt; string_length(text)){
-        caret++;
-    }
-}
-caret_move = caret_move_rate*(keyboard_check(vk_left) ^ keyboard_check(vk_right));
-if (keyboard_check_pressed(vk_home)) caret = 0;
-if (keyboard_check_pressed(vk_end)) caret = string_length(text);
-if (keyboard_check_pressed(vk_delete)) {
+            <string>if (keyboard_check_pressed(vk_delete)) {
     text = string_delete(text, caret + 1, 1);
 }
-
-if (keyboard_string != filltext &amp;&amp; keyboard_string != ""){
-    t = keyboard_string
-    l = string_length(t)
-    n = 1
-    // find where actual input starts
-    while (n &lt;= l &amp;&amp; (string_char_at(t, n) == fillchar)) n += 1
-    c = 11 - n
-    if (c &gt; 0 &amp;&amp; caret &gt; 0) {
-        caret -= c
-        text = string_delete(text, caret + 1, c)
-    }
-    c = l - n + 1
-    if (c &gt; 0) {
-        text = string_insert(string_copy(t, n, c), text, caret + 1)
-        caret += c
-    }
-}
-keyboard_string = filltext;
 </string>
           </argument>
         </arguments>
@@ -108,17 +50,10 @@ keyboard_string = filltext;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>draw_set_font(f_fancy);
-// sad truth: There is no way you can display the typed "#"
-ptext = string_replace_all(text, '#', '�')
-draw_text(x, y, ptext)
-i = string_width(string_copy(ptext, 1, caret))
-h = string_height('\\')
-draw_line(x + i, y, x + i, y + h); //cursor
-//i = string_width(text)
-if (keyboard_check_pressed(vk_enter)) {
+            <string>if(keyboard_check_pressed(vk_enter)) {
     with (obj_log) {
-        for (i = length - 1; i &gt;= 0; i -= 1) text[i + 1] = text[i]
+        for (i = length - 1; i &gt;= 0; i -= 1) 
+        text[i + 1] = text[i]
         length = min(maxlength, length + 1)
         text[0] = other.ptext;
     }

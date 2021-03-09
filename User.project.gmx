@@ -5,7 +5,9 @@
   </Configs>
   <NewExtensions/>
   <sounds name="sound"/>
-  <sprites name="sprites"/>
+  <sprites name="sprites">
+    <sprite>sprites\spr_textInputBox</sprite>
+  </sprites>
   <backgrounds name="background"/>
   <paths name="paths"/>
   <fonts name="fonts">
@@ -14,7 +16,7 @@
   <objects name="objects">
     <object>objects\obj_log</object>
     <object>objects\obj_input</object>
-    <object>objects\obj_test</object>
+    <object>objects\obj_textInputBox</object>
   </objects>
   <rooms name="rooms">
     <room>rooms\room0</room>
